@@ -147,8 +147,23 @@ def mainGame():
             
 
 def isCollide(playerx, playery, upperPipe, lowerPipe):
-    return False
+    if playery > GROUNDY -25 or playery <0:
+        GAME_SOUND['hit'].play()
+        return True
+    for pipe in upperPipe:
+        pipeHeight = GAME_SPRITE['pipe'][0].get_height()
+        if(playery < pipeHeight + pipe['y'] and abs(playerx - pipe['x']) < GAME_SPRITE['pipe'][0].get_width()):
+            GAME_SOUND['hit'].play()
+            return True
 
+    for pipe in lowerPipe:
+        if (playery + GAME_SPRITE  ['player'].get_height() > pipe['y']) and abs(playerx - pipe['x']) < GAME_SPRITE['pipe'][0].get_width():
+            GAME_SOUND['hit'].play()
+            return True
+
+
+    return False
+    
 def getRandomPipe():
     """
     Generate random position of two pipe(one bottom straight and one top rotted ) blitting on screen
