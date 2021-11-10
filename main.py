@@ -48,7 +48,7 @@ def welcomeScreen():
     
    
 
-def maingame():
+def mainGame():
     score = 0
     playerx = int(SCREENWIDTH/5)
     playery = int(SCREENWIDTH/2)
@@ -59,15 +59,17 @@ def maingame():
     newPipe2 = getRandomPipe()
 
     #list of the upper pipe
-    upperPipe = [
+    upperPipes = [
         {'x':SCREENWIDTH+200, 'y':newPipe1[0]['y']},
-        {'x':SCREENWIDTH+200(SCREENWIDTH/2), 'y':newPipe2[1]['y']},
+        {'x':SCREENWIDTH+200+(SCREENWIDTH/2), 'y':newPipe2[0]['y']},
     ]
     #list of the lower pipe
-    lowerPipe = [
-        {'x':SCREENWIDTH+200, 'y':newPipe1[0]['y']},
-        {'x':SCREENWIDTH+200(SCREENWIDTH/2), 'y':newPipe2[1]['y']},
+    lowerPipes = [
+        {'x':SCREENWIDTH+200, 'y':newPipe1[1]['y']},
+        {'x':SCREENWIDTH+200+(SCREENWIDTH/2), 'y':newPipe2[1]['y']},
     ]
+
+    
     pipeVelx =-4
     playerVely = -9
     playerMaxvely = 10
@@ -78,28 +80,29 @@ def maingame():
      
     while True:
         for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            if event.type == QUIT or (event.type == KEYDOWN and event.type == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-            if event.type == KEYDOWN or (event.type == K_SPACE or event.key == K_UP):
+            if event.type == KEYDOWN or (event.type == K_SPACE or event.type == K_UP):
                 if playery>0:
                     playerVely = playerFlapAccv
                     playerFlapped = True
                     GAME_SOUND['wing'].play()
 
-        crashTest = isCollide(playerx, playery, upperPipe, lowerPipe)
+        crashTest = isCollide(playerx, playery, upperPipes, lowerPipes)
         #this function return true if player is crash
         if crashTest:
             return
         
         #check score
-        playerMidPos = playerx =GAME_SPRITE['player'].get_width()/2
-        for pipes in upperPipe:
+        playerMidPos = playerx + GAME_SPRITE['player'].get_width()/2
+        for pipe in upperPipes:
             pipeMidPos = pipe['x'] + GAME_SPRITE['pipe'][0].get_width()/2
-            if pipeMidPos <= playerMidPos < pipeMidPos +4
+            
+            if pipeMidPos <= playerMidPos < pipeMidPos +4:
                 score += 1
                 print(f"your score is {score}")
-                GAME_SOUND['point'].play()
+                GAME_SOUND['point'].play()     
             if playerVely <playerMaxvely and not playerFlapped:
                 playerVely += playerAccy
             if playerFlapped:
@@ -113,29 +116,53 @@ def maingame():
                 lowerPipe['x'] += pipeVelx
             
             #Add new pipe when first pipe will be disapear
-            if 0 <upperPipe[0]['x']<5
+            if 0<upperPipes[0]['x']<5:
                 newpipe = getRandomPipe()
-                upperPipe.append(newpipe(0))
-                lowerPipe.append(newpipe(1))
+                upperPipes.append(newpipe[0])
+                lowerPipes.append(newpipe[1])
             #if pipe out of range just rempove it
-            if upperPipe[0]['x'] < -GAME_SPRITE['pipe'].get_width():
-                upperPipe.pop()
-                lowerPipe.pop()
+            if upperPipes[0]['x'] < -GAME_SPRITE['pipe'][0].get_width():
+                upperPipes.pop(0)
+                lowerPipes.pop(0) 
+            
+            #lets blits our sprites now
+            SCREEN.blit(GAME_SPRITE['background'],(0,0))
+            for upperPipe , lowerPipe in zip(upperPipes, lowerPipes):
+                SCREEN.blit(GAME_SPRITE['pipe'][0],(upperPipe['x'],upperPipe['y']))
+                SCREEN.blit(GAME_SPRITE['pipe'][1],(lowerPipe['x'],lowerPipe['y']))
+            SCREEN.blit(GAME_SPRITE['base'],(Basex,GROUNDY))
+            SCREEN.blit(GAME_SPRITE['player'],(playerx,playery))
+            myDigits = [int(x) for x in list(str(score))]
+            width = 0
+            for digit in myDigits:
+                width += GAME_SPRITE['numbers'][digit].get_width()
 
+            Xoffset = (SCREENWIDTH - width)/2
+
+            for digit in myDigits:
+                SCREEN.blit(GAME_SPRITE['numbers'][digit],(Xoffset, SCREENHEIGHT*0.10))
+                Xoffset += GAME_SPRITE['numbers'][digit].get_width()
+            pygame.display.update()
+            FPSCLOCK.tick(FPS)
+            
+
+def isCollide(playerx, playery, upperPipe, lowerPipe):
+    return False
 
 def getRandomPipe():
     """
     Generate random position of two pipe(one bottom straight and one top rotted ) blitting on screen
     """
-    pipeHeight = GAME_SPRITE['pipe'][0].getHeight()
+    pipeHeight = GAME_SPRITE['pipe'][0].get_height()
+    
     offset = SCREENHEIGHT/3
-    y2 = offset + random.randrange(0, int(SCREENHEIGHT - GAME_SPRITE['base'].getheight() - 1.2 * offset))
+    y2 = offset + random.randrange(0, int(SCREENHEIGHT - GAME_SPRITE['base'].get_height() - 1.2 * offset))
     pipex = SCREENWIDTH +10
     y1 = pipeHeight -y2 + offset
-    pipe = {
+    pipe = [
         {'x':pipex, 'y': -y1}, #upper pipe
         {'x':pipex, 'y': y2}#lower pipe
-    }
+    ]
     return pipe
 
 if __name__ == "__main__":
@@ -143,7 +170,7 @@ if __name__ == "__main__":
     pygame.init() #initialise all pygame module
     FPSCLOCK = pygame.time.Clock()
     pygame.display,set_caption("FLAPPY BIRD GAME BY GAURESH")
-    GAME_SPRITE['numbers'] = {
+    GAME_SPRITE['numbers'] = (
         pygame.image.load("gallery/sprites/0.png").convert_alpha(),
         pygame.image.load("gallery/sprites/1.png").convert_alpha(),
         pygame.image.load("gallery/sprites/2.png").convert_alpha(),
@@ -154,13 +181,13 @@ if __name__ == "__main__":
         pygame.image.load("gallery/sprites/7.png").convert_alpha(),
         pygame.image.load("gallery/sprites/8.png").convert_alpha(),
         pygame.image.load("gallery/sprites/9.png").convert_alpha(),
-    }
-    print(GAME_SPRITE)
+    ) 
+    #print(GAME_SPRITE)
     GAME_SPRITE['message'] = pygame.image.load("gallery/sprites/message.png")
     GAME_SPRITE['base'] = pygame.image.load("gallery/sprites/base.png")
-    GAME_SPRITE['pipe'] = {pygame.transform.rotate(pygame.image.load(PIPE).convert_alpha(),180),
+    GAME_SPRITE['pipe'] =(pygame.transform.rotate(pygame.image.load( PIPE).convert_alpha(), 180), 
     pygame.image.load(PIPE).convert_alpha()
-    }
+    )
 
 
     #GAME SOUND
@@ -174,5 +201,7 @@ if __name__ == "__main__":
     GAME_SPRITE['player'] = pygame.image.load(PLAYER).convert_alpha()
 
     while True:
+    
         welcomeScreen() #shows user main screen until he press button
-        maingame() # this is main game function
+        mainGame()
+        #this is main game function
